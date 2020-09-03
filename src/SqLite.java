@@ -1,33 +1,26 @@
+import javax.swing.*;
+import javax.swing.table.TableModel;
 import java.sql.*;
 
 public class SqLite {
     public static void main(String[] args) {
-        Connection con = null;
-        Statement stmt = null;
-        ResultSet res = null;
         try{
-            Driver d = (Driver) Class.forName("org.sqlite.JDBC").newInstance(); //org.sqlite.JDBC
-            String url = "jdbc:sqlite:bd\\CarShop.db";
-            con = DriverManager.getConnection(url);
+            Connection con = SQLiteConnection.getConnection();
 
-            String sql = "SELECT * FROM spr_Model";
-            stmt = con.createStatement();
+            TableModel mod = new MyTableModel(con, "CarBrand");
 
-            res = stmt.executeQuery(sql);
+            JTable jTable = new JTable(mod);
 
-            while (res.next()){
-                System.out.println(res.getString("name_en")+ " - "+ res.getObject("name_ru"));
-            }
-        } catch (SQLException e){
-            e.printStackTrace();
-        } catch (Exception e){
-            e.printStackTrace();
-        } finally {
-            try{
-                if(res!=null)res.close();
-                if(stmt!=null)stmt.close();
-                if(con!=null)con.close();
-            } catch (Exception e){}
-        }
+            jTable.setDefaultRenderer(Object.class, new MyTableRenderer());
+            JScrollPane scroller = new JScrollPane(jTable, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+            JFrame frame = new JFrame("Полученные данные");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.getContentPane().add(scroller);
+            frame.pack();
+            frame.setVisible(true);
+
+            con.close();
+        } catch (Exception e){e.printStackTrace();}
     }
 }
